@@ -1608,7 +1608,7 @@ export const AdminPage: React.FC = () => {
               <span style={{ fontSize: '24px' }}>📊</span>
               <p style={{ margin: '8px 0', fontSize: '13px', color: 'var(--ink-mid)' }}>Upload file danh sách câu hỏi theo mẫu</p>
               <div style={{ marginBottom: '12px' }}>
-                <a href="/Quiz_Template.xlsx" download style={{ fontSize: '12px', color: 'var(--blue)', textDecoration: 'underline' }}>📥 Tải file mẫu (.xlsx)</a>
+                <a href="/Quiz_Template.xlsx" download="Quiz_Template.xlsx" target="_blank" rel="noopener noreferrer" onClick={(e) => { e.preventDefault(); window.open('/Quiz_Template.xlsx', '_blank'); }} style={{ fontSize: '12px', color: 'var(--blue)', textDecoration: 'underline', cursor: 'pointer' }}>📥 Tải file mẫu (.xlsx)</a>
               </div>
               <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} style={{ fontSize: '12px' }} />
               {quizQuestions.length > 0 && (
