@@ -663,7 +663,23 @@ export const AdminPage: React.FC = () => {
                   <option key={cat.id} value={cat.key}>{cat.name}</option>
                 ))}
               </select>
-              <button className="btn-pri" onClick={() => { setActiveCourseId(null); goTo('s-editor'); }}>+ Khoá học mới</button>
+              <button className="btn-pri" onClick={() => { 
+                createCourse.mutate({
+                  title: '',
+                  slug: `draft-${Date.now()}`,
+                  description: '',
+                  difficulty_level: 'co_ban',
+                  xp_on_complete: 150,
+                  category: 'tuDuy',
+                  is_published: false
+                }, {
+                  onSuccess: (data) => {
+                    setActiveCourseId(data.id);
+                    goTo('s-editor');
+                  },
+                  onError: (err) => alert('Lỗi tạo bản nháp: ' + err.message)
+                });
+              }}>+ Khoá học mới</button>
             </div>
           </div>
           <table>
