@@ -110,7 +110,7 @@ export const AdminPage: React.FC = () => {
       });
     } else {
       createCourse.mutate(payload, {
-        onSuccess: (data) => {
+        onSuccess: (data: any) => {
           alert('Đã tạo/lưu khoá học thành công!');
           setActiveCourseId(data.id);
         },
@@ -122,7 +122,7 @@ export const AdminPage: React.FC = () => {
   const handleLessonSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const data = Object.fromEntries(fd.entries());
+    const data: any = Object.fromEntries(fd.entries());
     data.module_id = activeModuleId;
     data.course_id = activeCourseId;
     
@@ -673,7 +673,7 @@ export const AdminPage: React.FC = () => {
                   category: 'tuDuy',
                   is_published: false
                 }, {
-                  onSuccess: (data) => {
+                  onSuccess: (data: any) => {
                     setActiveCourseId(data.id);
                     goTo('s-editor');
                   },
