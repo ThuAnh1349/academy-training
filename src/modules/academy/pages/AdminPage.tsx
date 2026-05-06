@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminDashboardStats, useAdminUsersList, useAdminCourses, useAdminCategories, useAdminAchievements, useAdminCourseModules } from '../hooks/use-admin';
 import { useCreateCategory, useInviteUser, useCreateAchievement, useCreateLesson, useCreateCourse, useUpdateCourse, useUpdateCategory, useCreateModule, useUpdateModule, useUpdateLesson, useDeleteModule, useDeleteLesson } from '../hooks/use-admin-mutations';
+import * as XLSX from 'xlsx';
 import './AdminPage.css';
 
 export const AdminPage: React.FC = () => {
@@ -19,6 +20,7 @@ export const AdminPage: React.FC = () => {
   const [lessonType, setLessonType] = useState('video');
   const [videoInputType, setVideoInputType] = useState('upload');
   const [quizInputType, setQuizInputType] = useState('manual');
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
 
   
   // Mutations
@@ -122,13 +124,41 @@ export const AdminPage: React.FC = () => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const data = Object.fromEntries(fd.entries());
+    data.module_id = activeModuleId;
+    data.course_id = activeCourseId;
+    
+    if (data.lesson_type === 'quiz') {
+      data.content_data = JSON.stringify(quizQuestions);
+    }
+
     createLesson.mutate(data, {
       onSuccess: () => {
-        alert('Đã thêm bài học!');
+        alert('Đã thêm bài học/quiz!');
+        setQuizQuestions([]);
         closeModal(setLessonModalOpen);
       },
       onError: (err) => alert('Lỗi: ' + err.message)
     });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        setQuizQuestions(data);
+        alert(`Đã tải lên ${data.length} câu hỏi thành công!`);
+      } catch (err) {
+        alert('Lỗi đọc file Excel. Vui lòng dùng file mẫu.');
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
 
@@ -1578,9 +1608,14 @@ export const AdminPage: React.FC = () => {
               <span style={{ fontSize: '24px' }}>📊</span>
               <p style={{ margin: '8px 0', fontSize: '13px', color: 'var(--ink-mid)' }}>Upload file danh sách câu hỏi theo mẫu</p>
               <div style={{ marginBottom: '12px' }}>
-                <a href="#" style={{ fontSize: '12px', color: 'var(--blue)', textDecoration: 'underline' }}>📥 Tải file mẫu (.xlsx)</a>
+                <a href="/Quiz_Template.xlsx" download style={{ fontSize: '12px', color: 'var(--blue)', textDecoration: 'underline' }}>📥 Tải file mẫu (.xlsx)</a>
               </div>
-              <input type="file" accept=".xlsx, .xls, .csv" style={{ fontSize: '12px' }} />
+              <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} style={{ fontSize: '12px' }} />
+              {quizQuestions.length > 0 && (
+                <div style={{ marginTop: '10px', color: 'var(--teal-d)', fontWeight: 'bold' }}>
+                  ✓ Đã tải {quizQuestions.length} câu hỏi sẵn sàng để lưu.
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-xs)', padding: '12px' }}>
