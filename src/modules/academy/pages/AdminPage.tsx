@@ -76,7 +76,7 @@ export const AdminPage: React.FC = () => {
     });
   };
 
-  const handleCourseSubmit = () => {
+  const handleCourseSubmit = (is_published = false) => {
     const title = (document.getElementById('ed-title') as HTMLInputElement)?.value;
     const slug = (document.getElementById('ed-slug') as HTMLInputElement)?.value;
     const description = (document.getElementById('ed-desc') as HTMLTextAreaElement)?.value;
@@ -89,20 +89,33 @@ export const AdminPage: React.FC = () => {
       return;
     }
 
-    createCourse.mutate({
+    const payload = {
       title,
       slug,
       description,
       difficulty_level: level,
       xp_on_complete: xp,
-      category: categoryId
-    }, {
-      onSuccess: () => {
-        alert('Đã tạo/lưu khoá học thành công!');
-        (document.getElementById('ed-title') as HTMLInputElement).value = '';
-      },
-      onError: (err) => alert('Lỗi: ' + err.message)
-    });
+      category: categoryId,
+      is_published
+    };
+
+    if (activeCourseId) {
+      updateCourse.mutate({ id: activeCourseId, payload }, {
+        onSuccess: () => {
+          alert('Đã cập nhật khoá học thành công!');
+        },
+        onError: (err) => alert('Lỗi: ' + err.message)
+      });
+    } else {
+      createCourse.mutate(payload, {
+        onSuccess: (data) => {
+          alert('Đã tạo/lưu khoá học thành công!');
+          (document.getElementById('ed-title') as HTMLInputElement).value = '';
+          setActiveCourseId(data.id);
+        },
+        onError: (err) => alert('Lỗi: ' + err.message)
+      });
+    }
   };
 
   const handleLessonSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -165,7 +178,7 @@ export const AdminPage: React.FC = () => {
               const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
               if (keyEl) keyEl.value = course.id;
             }
-          }, 100);
+          }, 150);
         }
       } else {
         setTimeout(() => {
@@ -181,7 +194,7 @@ export const AdminPage: React.FC = () => {
             const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
             if (keyEl) keyEl.value = '';
           }
-        }, 100);
+        }, 150);
       }
     }
   }, [activeTab, activeCourseId, courses]);
@@ -917,8 +930,8 @@ export const AdminPage: React.FC = () => {
               </div>
               <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input type="hidden" id="ed-course-key" />
-                <button className="btn-pri" type="button" onClick={handleCourseSubmit} style={{ justifyContent: "center", height: "40px", fontSize: "13.5px" }}>💾 Lưu nháp</button>
-                <button className="btn-pri" type="button" onClick={handleCourseSubmit} style={{ justifyContent: "center", height: "40px", fontSize: "13.5px", background: "linear-gradient(135deg,var(--teal),var(--teal-d))" }}>🚀 Publish ngay</button>
+                <button className="btn-pri" type="button" onClick={() => handleCourseSubmit(false)} style={{ justifyContent: "center", height: "40px", fontSize: "13.5px" }}>💾 Lưu nháp</button>
+                <button className="btn-pri" type="button" onClick={() => handleCourseSubmit(true)} style={{ justifyContent: "center", height: "40px", fontSize: "13.5px", background: "linear-gradient(135deg,var(--teal),var(--teal-d))" }}>🚀 Publish ngay</button>
               </div>
             </div>
 
