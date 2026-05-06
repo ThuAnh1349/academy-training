@@ -112,7 +112,6 @@ export const AdminPage: React.FC = () => {
       createCourse.mutate(payload, {
         onSuccess: (data) => {
           alert('Đã tạo/lưu khoá học thành công!');
-          (document.getElementById('ed-title') as HTMLInputElement).value = '';
           setActiveCourseId(data.id);
         },
         onError: (err) => alert('Lỗi: ' + err.message)
@@ -899,7 +898,8 @@ export const AdminPage: React.FC = () => {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && newModuleTitle.trim()) {
               createModule.mutate({ course_id: activeCourseId, title: newModuleTitle }, { 
-                onSuccess: () => { setIsAddingModule(false); setNewModuleTitle(''); } 
+                onSuccess: () => { setIsAddingModule(false); setNewModuleTitle(''); },
+                onError: (err) => alert('Lỗi khi thêm module: ' + err.message)
               });
             } else if (e.key === 'Escape') {
               setIsAddingModule(false); setNewModuleTitle('');
@@ -909,7 +909,8 @@ export const AdminPage: React.FC = () => {
         <button className="btn-pri" style={{ whiteSpace: 'nowrap' }} onClick={() => {
           if (newModuleTitle.trim()) {
             createModule.mutate({ course_id: activeCourseId, title: newModuleTitle }, { 
-              onSuccess: () => { setIsAddingModule(false); setNewModuleTitle(''); } 
+              onSuccess: () => { setIsAddingModule(false); setNewModuleTitle(''); },
+              onError: (err) => alert('Lỗi khi thêm module: ' + err.message)
             });
           }
         }}>Thêm</button>
