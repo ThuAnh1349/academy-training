@@ -12,7 +12,13 @@ export const LoginPage: React.FC = () => {
 
   if (isAuthenticated && user) {
     const defaultUrl = user.role === 'admin' ? '/admin' : '/';
-    const returnUrl = location.state?.returnUrl || defaultUrl;
+    let returnUrl = location.state?.returnUrl || defaultUrl;
+    
+    // Nếu user là admin và đang vào trang chủ gốc, ưu tiên chuyển hướng về Dashboard
+    if (user.role === 'admin' && returnUrl === '/') {
+      returnUrl = '/admin';
+    }
+    
     return <Navigate to={returnUrl} replace />;
   }
 
