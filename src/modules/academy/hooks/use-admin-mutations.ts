@@ -17,6 +17,7 @@ export const useCreateCourse = () => {
     mutationFn: (courseData: any) => apiClient.post('/v1/admin/courses', courseData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminDashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['adminCourses'] });
     },
   });
 };
