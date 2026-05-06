@@ -41,19 +41,19 @@ export const AcademyHomePage: React.FC = () => {
         </div>
       </div>
 
-      {dashboard.active_lesson && (
+      {dashboard.continue_learning && (
         <>
           <div className="sec-h"><h2>Tiếp tục học</h2></div>
-          <div className="continue-card" onClick={() => navigate('/player')}>
-            <div className="cc-emoji">🧠</div>
+          <div className="continue-card" onClick={() => navigate(`/player/${dashboard.continue_learning!.course_slug}/${dashboard.continue_learning!.lesson_id}`)}>
+            <div className="cc-emoji">{dashboard.continue_learning.course_thumbnail_emoji || '🧠'}</div>
             <div className="cc-info">
               <div className="cc-tag">Đang học</div>
-              <div className="cc-title">{dashboard.active_lesson.course_title}</div>
-              <div className="cc-sub">{dashboard.active_lesson.lesson_title}</div>
-              <div className="prog-bar"><div className="prog-fill" style={{width: `${dashboard.active_lesson.progress_pct}%`}}></div></div>
-              <div className="prog-txt">{dashboard.active_lesson.progress_pct}% hoàn thành</div>
+              <div className="cc-title">{dashboard.continue_learning.course_title}</div>
+              <div className="cc-sub">{dashboard.continue_learning.lesson_title}</div>
+              <div className="prog-bar"><div className="prog-fill" style={{width: `${dashboard.continue_learning.progress_percent}%`}}></div></div>
+              <div className="prog-txt">{dashboard.continue_learning.progress_percent}% hoàn thành</div>
             </div>
-            <button className="cc-btn" onClick={(e) => { e.stopPropagation(); navigate('/player'); }}>▶ Học tiếp</button>
+            <button className="cc-btn" onClick={(e) => { e.stopPropagation(); navigate(`/player/${dashboard.continue_learning!.course_slug}/${dashboard.continue_learning!.lesson_id}`); }}>▶ Học tiếp</button>
           </div>
         </>
       )}
@@ -61,13 +61,13 @@ export const AcademyHomePage: React.FC = () => {
       <div className="sec-h"><h2>Khoá học phổ biến</h2><button onClick={() => navigate('/search')}>Xem tất cả →</button></div>
       <div className="course-grid">
         {courses?.slice(0, 3).map(c => (
-          <div key={c.id} className="cg-card" onClick={() => navigate('/course')}>
+          <div key={c.id} className="cg-card" onClick={() => navigate(`/course/${c.slug}`)}>
             <div className={`cg-thumb ${c.slug === 'critical-thinking-l1' ? 'bg-teal-g' : 'bg-gold-g'}`}><span>🧠</span></div>
             <div className="cg-body">
               <div className={`cg-tag ${c.slug === 'critical-thinking-l1' ? 'tag-teal' : 'tag-gold'}`}>{c.slug === 'critical-thinking-l1' ? 'Tư duy' : 'Tài chính'}</div>
               <div className="cg-title">{c.title}</div>
               <div className="cg-meta">
-                <div className="cg-info">{c.lesson_count} bài · {Math.floor(c.estimated_minutes/60)}h {c.estimated_minutes%60}m</div>
+                <div className="cg-info">{c.total_lessons} bài · {Math.floor(c.total_duration_minutes/60)}h {c.total_duration_minutes%60}m</div>
                 <div className="cg-rat">★ {c.avg_rating}</div>
               </div>
               <div className="cg-prog"><div className="cg-prog-fill" style={{width:'0%',background:'var(--bg)'}}></div></div>

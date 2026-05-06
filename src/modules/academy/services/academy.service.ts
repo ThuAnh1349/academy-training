@@ -1,31 +1,20 @@
-import axios from 'axios';
+import { apiClient } from '../../../services/api-client';
 import type { LearnerDashboard, CourseBrief, CourseDetailWithProgress, LessonContent, GamificationState } from '../types/academy.types';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.nquoc.vn';
-
-const apiClient = axios.create({
-  baseURL: `${API_BASE}/api/v1/academy`,
-});
 
 export const academyService = {
   getDashboard: async (): Promise<LearnerDashboard> => {
-    const response = await apiClient.get('/learn/dashboard');
-    return response.data;
+    return apiClient.get<LearnerDashboard>('/v1/academy/learn/dashboard');
   },
   getCourses: async (): Promise<CourseBrief[]> => {
-    const response = await apiClient.get('/learn/courses');
-    return response.data.data;
+    return apiClient.get<CourseBrief[]>('/v1/academy/learn/courses');
   },
   getCourseDetail: async (slug: string): Promise<CourseDetailWithProgress> => {
-    const response = await apiClient.get(`/learn/courses/${slug}`);
-    return response.data;
+    return apiClient.get<CourseDetailWithProgress>(`/v1/academy/learn/courses/${slug}`);
   },
   getLessonContent: async (id: string): Promise<LessonContent> => {
-    const response = await apiClient.get(`/learn/lessons/${id}`);
-    return response.data;
+    return apiClient.get<LessonContent>(`/v1/academy/learn/lessons/${id}`);
   },
   getGamification: async (): Promise<GamificationState> => {
-    const response = await apiClient.get('/learn/gamification');
-    return response.data;
+    return apiClient.get<GamificationState>('/v1/academy/learn/gamification');
   }
 };

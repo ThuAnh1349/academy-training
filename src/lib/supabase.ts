@@ -4,10 +4,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Thiếu biến môi trường Supabase! Vui lòng cập nhật file .env');
+  console.warn('Missing Supabase env variables');
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder-project.supabase.co',
-  supabaseAnonKey || 'placeholder-anon-key'
+  supabaseUrl || 'http://localhost:54321', // fallback
+  supabaseAnonKey || 'public-anon-key'
 );

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -14,6 +16,24 @@ export const MainLayout: React.FC = () => {
       case '/profile': return 'Hồ sơ & Cert';
       default: return 'Trang chủ';
     }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(-2)
+      .map(w => w[0].toUpperCase())
+      .join('');
+  };
+
+  const displayName = user?.display_name || user?.email?.split('@')[0] || 'User';
+  const initials = getInitials(displayName);
+  const xp = user?.total_xp ?? 0;
+  const level = user?.current_level ?? 1;
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -43,12 +63,50 @@ export const MainLayout: React.FC = () => {
           <button className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`} onClick={() => navigate('/profile')}>
             <span className="nav-icon">🎓</span><span className="nav-text">Hồ sơ & Cert</span>
           </button>
+
+          {/* Chỉ hiện Admin Panel nếu user là admin */}
+          {user?.role === 'admin' && (
+            <>
+              <div className="nav-lbl">Quản trị</div>
+              <button
+                className={`nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
+                onClick={() => navigate('/admin')}
+                style={{ background: location.pathname === '/admin' ? 'rgba(123,47,190,0.12)' : undefined }}
+                onMouseEnter={e => { if (location.pathname !== '/admin') e.currentTarget.style.background = '#F0E8FA'; }}
+                onMouseLeave={e => { if (location.pathname !== '/admin') e.currentTarget.style.background = ''; }}
+              >
+                <span className="nav-icon">⚙️</span>
+                <span className="nav-text" style={{ color: '#7B2FBE', fontWeight: 900 }}>Admin Panel</span>
+              </button>
+            </>
+          )}
+
+          {/* Đường kẻ phân cách */}
+          <div style={{
+            margin: '12px 8px 8px',
+            height: '1px',
+            background: 'rgba(0,0,0,0.07)',
+          }} />
+
+          {/* Nút đăng xuất */}
+          <button
+            className="nav-item"
+            onClick={handleSignOut}
+            id="btn-sign-out"
+            onMouseEnter={e => (e.currentTarget.style.background = '#FEF0EB')}
+            onMouseLeave={e => (e.currentTarget.style.background = '')}
+          >
+            <span className="nav-icon" style={{ color: '#E53935' }}>🚪</span>
+            <span className="nav-text" style={{ color: '#E53935' }}>Đăng xuất</span>
+          </button>
         </nav>
-        <div className="sb-user" onClick={() => navigate('/profile')}>
-          <div className="sb-av">AN</div>
-          <div>
-            <div className="sb-uname">Nguyễn Thị An</div>
-            <div className="sb-ulvl">🌱 Cơ bản · 340 điểm NLT</div>
+
+        {/* User info — click để vào profile */}
+        <div className="sb-user" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+          <div className="sb-av">{initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="sb-uname">{displayName}</div>
+            <div className="sb-ulvl">🌱 Lv.{level} · {xp} điểm NLT</div>
           </div>
         </div>
       </aside>

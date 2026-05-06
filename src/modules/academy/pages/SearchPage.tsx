@@ -12,11 +12,10 @@ export const SearchPage: React.FC = () => {
   if (isLoading) return <div style={{padding: '24px'}}>Đang tải danh sách khoá học...</div>;
 
   const filtered = (courses || []).filter(c => {
-    // Map slugs to tags for demo filtering
-    const isTuDuy = c.slug.includes('thinking');
-    const isTaiChinh = c.slug.includes('finance');
-    const isNgheNghiep = c.slug.includes('career');
-    const isGiaoTiep = c.slug.includes('communication');
+    const isTuDuy = c.category === 'tuDuy';
+    const isTaiChinh = c.category === 'taiChinh';
+    const isNgheNghiep = c.category === 'ngheNghiep';
+    const isGiaoTiep = c.category === 'giaoTiep';
 
     let matchCat = activeCat === 'all';
     if (activeCat === 'tuDuy' && isTuDuy) matchCat = true;
@@ -48,11 +47,11 @@ export const SearchPage: React.FC = () => {
       <div className="sec-h"><h2>Tất cả khoá học</h2><span style={{fontSize:'12px',color:'var(--ink-light)',fontWeight:700}}>{filtered.length} khoá</span></div>
       <div className="course-grid">
         {filtered.map(c => {
-          const isTuDuy = c.slug.includes('thinking');
-          const isTaiChinh = c.slug.includes('finance');
-          const isNghe = c.slug.includes('career');
-          const bg = isTuDuy ? 'bg-teal-g' : isTaiChinh ? 'bg-gold-g' : isNghe ? 'bg-blue-g' : 'bg-coral-g';
-          const icon = isTuDuy ? '🧠' : isTaiChinh ? '💰' : isNghe ? '💼' : '🗣️';
+          const isTuDuy = c.category === 'tuDuy';
+          const isTaiChinh = c.category === 'taiChinh';
+          const isNghe = c.category === 'ngheNghiep';
+          const bg = c.thumbnail_color || (isTuDuy ? 'bg-teal-g' : isTaiChinh ? 'bg-gold-g' : isNghe ? 'bg-blue-g' : 'bg-coral-g');
+          const icon = c.thumbnail_emoji || (isTuDuy ? '🧠' : isTaiChinh ? '💰' : isNghe ? '💼' : '🗣️');
           const tagClass = isTuDuy ? 'tag-teal' : isTaiChinh ? 'tag-gold' : isNghe ? 'tag-blue' : 'tag-coral';
           const tagLabel = isTuDuy ? 'Tư duy' : isTaiChinh ? 'Tài chính' : isNghe ? 'Nghề nghiệp' : 'Giao tiếp';
           return (
@@ -62,7 +61,7 @@ export const SearchPage: React.FC = () => {
                 <div className={`cg-tag ${tagClass}`}>{tagLabel}</div>
                 <div className="cg-title">{c.title}</div>
                 <div className="cg-meta">
-                  <div className="cg-info">{c.lesson_count} bài · {Math.floor(c.estimated_minutes/60)}h {c.estimated_minutes%60}m</div>
+                  <div className="cg-info">{c.total_lessons} bài · {Math.floor(c.total_duration_minutes/60)}h {c.total_duration_minutes%60}m</div>
                   <div className="cg-rat">★ {c.avg_rating}</div>
                 </div>
                 <div className="cg-prog"><div className="cg-prog-fill" style={{width:'0%',background:'var(--bg)'}}></div></div>

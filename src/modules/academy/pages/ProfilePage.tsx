@@ -66,9 +66,9 @@ export const ProfilePage: React.FC = () => {
         <div>
           <div className="sec-h"><h2>Thành tích</h2></div>
           <div className="ach-grid">
-            {gamification.badges.map((badge) => (
+            {gamification.achievements.map((badge) => (
               <div key={badge.id} className="ach-card">
-                <div className="ach-icon">{badge.code === 'streak_7' ? '🔥' : '🧠'}</div>
+                <div className="ach-icon">{badge.key === 'streak_7' ? '🔥' : '🧠'}</div>
                 <div className="ach-title">{badge.title}</div>
                 <div className="ach-desc">{badge.description}</div>
                 <div className="ach-bar"><div className="ach-bar-f" style={{width:'100%',background:'var(--teal)'}}></div></div>

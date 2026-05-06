@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useLessonContent, useCourseDetail } from '../hooks/use-academy';
 
+import { useParams, useNavigate } from 'react-router-dom';
+
+const getYoutubeId = (url: string) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 export const LessonPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { courseSlug, lessonId } = useParams();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(42);
   const [showBanner, setShowBanner] = useState(false);
   const [quizState, setQuizState] = useState<'none' | 'correct' | 'wrong'>('none');
 
-  // Hardcoded for demo. Should come from URL params.
-  const { data: lesson, isLoading: loadLesson } = useLessonContent('l5');
-  const { data: detail, isLoading: loadCourse } = useCourseDetail('critical-thinking-l1');
+  const { data: lesson, isLoading: loadLesson } = useLessonContent(lessonId || '');
+  const { data: detail, isLoading: loadCourse } = useCourseDetail(courseSlug || '');
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (isPlaying) {
       timer = setInterval(() => {
         setProgress(p => {
@@ -45,32 +55,56 @@ export const LessonPage: React.FC = () => {
     <div className="screen active" id="s-player">
       <div className="pl-layout">
         <div>
-          <div className="pl-video">
-            <div className="pl-bg"><span className="pl-emoji">🧠</span></div>
-            <div className="play-ov">
-              <div className={`play-c ${isPlaying ? 'playing' : ''}`} onClick={togglePlay}>
-                <span className="play-icon">{isPlaying ? '⏸' : (progress >= 100 ? '↺' : '▶')}</span>
-              </div>
-              <div className="pl-caption">{isPlaying ? `Bài ${lesson.lesson_order} — ${lesson.title}` : (progress >= 100 ? 'Video kết thúc — hoàn thành bài!' : 'Nhấn để phát')}</div>
-            </div>
-            <div className="pl-ctrl">
-              <div className="pl-ctrl-top">
-                <span className="pl-time">8:32 / {Math.floor((lesson.video_duration_s || 0)/60)}:00</span>
-                <div className="pl-ctrl-btns">
-                  <button className="pl-speed">1.0×</button>
+          
+          <div className="pl-video" style={{ position: 'relative', background: '#000' }}>
+            {lesson.video_url ? (
+              getYoutubeId(lesson.video_url) ? (
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={`https://www.youtube.com/embed/${getYoutubeId(lesson.video_url)}?autoplay=0&rel=0`} 
+                  title="YouTube video player" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 'var(--r-md)' }}
+                ></iframe>
+              ) : (
+                <video 
+                  controls 
+                  src={lesson.video_url} 
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 'var(--r-md)' }}
+                />
+              )
+            ) : (
+              <>
+                <div className="pl-bg"><span className="pl-emoji">🧠</span></div>
+                <div className="play-ov">
+                  <div className={`play-c ${isPlaying ? 'playing' : ''}`} onClick={togglePlay}>
+                    <span className="play-icon">{isPlaying ? '⏸' : (progress >= 100 ? '↺' : '▶')}</span>
+                  </div>
+                  <div className="pl-caption">{isPlaying ? `Bài ${lesson.order_index} — ${lesson.title}` : (progress >= 100 ? 'Video kết thúc — hoàn thành bài!' : 'Nhấn để phát')}</div>
                 </div>
-              </div>
-              <div className="vid-seek">
-                <div className="vid-seek-f" style={{width: `${progress}%`}}></div>
-              </div>
-            </div>
+                <div className="pl-ctrl">
+                  <div className="pl-ctrl-top">
+                    <span className="pl-time">0:00 / {lesson.duration_minutes || 0}:00</span>
+                    <div className="pl-ctrl-btns">
+                      <button className="pl-speed">1.0×</button>
+                    </div>
+                  </div>
+                  <div className="vid-seek">
+                    <div className="vid-seek-f" style={{width: `${progress}%`}}></div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {showBanner && (
             <div className="complete-banner show">
               <div className="cb-icon">🎉</div>
               <div className="cb-text">
-                <h4>Bài {lesson.lesson_order} hoàn thành! +{lesson.xp_reward} XP</h4>
+                <h4>Bài {lesson.order_index} hoàn thành! +{lesson.xp_on_complete} XP</h4>
                 <p>Bài tiếp theo đã mở khoá</p>
               </div>
               <button className="cb-next" onClick={() => setShowBanner(false)}>Bài tiếp → </button>
@@ -80,15 +114,9 @@ export const LessonPage: React.FC = () => {
           <div className="lesson-detail">
             <div className="ld-top">
               <div className="ld-title">{lesson.title}</div>
-              <div className="ld-xp">+{lesson.xp_reward} XP</div>
+              <div className="ld-xp">+{lesson.xp_on_complete} XP</div>
             </div>
-            <div className="ld-body">{lesson.content_markdown}</div>
-            <div className="key-box">
-              <h4>Điểm chính cần nhớ</h4>
-              <ul>
-                {lesson.key_points.map((kp, idx) => <li key={idx}>{kp}</li>)}
-              </ul>
-            </div>
+            <div className="ld-body">{lesson.content_body}</div>
           </div>
 
           <div className="lnav">
@@ -125,19 +153,25 @@ export const LessonPage: React.FC = () => {
         <div>
           <div className="pp">
             <div className="pp-title">{detail.course.title}</div>
-            <div className="pp-sub">Module {lesson.module_order} · {detail.enrollment?.lessons_completed}/{detail.course.lesson_count} bài hoàn thành</div>
+            <div className="pp-sub">Tiến độ khoá học · {detail.enrollment?.lessons_completed}/{detail.course.total_lessons} bài hoàn thành</div>
             <div className="pp-prog-bar"><div className="pp-prog-f" style={{width: `${detail.enrollment?.progress_pct || 0}%`}}></div></div>
             
             {detail.modules.map(mod => (
-              <React.Fragment key={mod.module_order}>
-                {mod.lessons.map(l => (
-                  <div key={l.id} className={`pp-lesson ${l.id === lesson.id ? 'pp-cur' : l.status === 'locked' ? 'pp-locked-l' : 'pp-clickable'}`}>
-                    <div className={`pp-n ${l.status === 'completed' ? 'pp-nd' : l.id === lesson.id ? 'pp-na' : l.status === 'locked' ? 'pp-nl' : ''}`}>
-                      {l.status === 'completed' ? '✓' : l.status === 'locked' ? '🔒' : l.lesson_order}
+              <React.Fragment key={mod.order_index}>
+                {mod.lessons.map((l: any) => (
+                  <div 
+                    key={l.id} 
+                    className={`pp-lesson ${l.id === lesson.id ? 'pp-cur' : l.is_locked ? 'pp-locked-l' : 'pp-clickable'}`}
+                    onClick={() => {
+                      if (!l.is_locked && l.id !== lesson.id) navigate(`/player/${courseSlug}/${l.id}`);
+                    }}
+                  >
+                    <div className={`pp-n ${l.status === 'completed' ? 'pp-nd' : l.id === lesson.id ? 'pp-na' : l.is_locked ? 'pp-nl' : ''}`}>
+                      {l.status === 'completed' ? '✓' : l.is_locked ? '🔒' : l.order_index}
                     </div>
                     <div>
                       <div className="pp-lt">{l.title}</div>
-                      <div className="pp-ld">{l.estimated_minutes} phút {l.id === lesson.id ? '· Đang xem' : l.status === 'locked' ? '· Khoá' : ''}</div>
+                      <div className="pp-ld">{l.duration_minutes} phút {l.id === lesson.id ? '· Đang xem' : l.is_locked ? '· Khoá' : ''}</div>
                     </div>
                   </div>
                 ))}

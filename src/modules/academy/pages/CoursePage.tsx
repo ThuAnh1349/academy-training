@@ -1,12 +1,11 @@
 import React from 'react';
 import { useCourseDetail } from '../hooks/use-academy';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export const CoursePage: React.FC = () => {
   const navigate = useNavigate();
-  // Using a hardcoded slug 'critical-thinking-l1' for demo.
-  // In a real app, this would come from useParams()
-  const { data: detail, isLoading } = useCourseDetail('critical-thinking-l1');
+  const { slug } = useParams();
+  const { data: detail, isLoading } = useCourseDetail(slug || '');
 
   if (isLoading) return <div style={{padding: '24px'}}>Đang tải khoá học...</div>;
   if (!detail) return <div>Lỗi tải khoá học</div>;
@@ -20,46 +19,46 @@ export const CoursePage: React.FC = () => {
         <div>
           <div className="cd-hero">
             <span className="cd-emoji">🧠</span>
-            <div className="cd-tag">{course.slug === 'critical-thinking-l1' ? 'Tư duy' : 'Chủ đề'} · {course.proficiency_level}</div>
+            <div className="cd-tag">{course.slug === 'critical-thinking-l1' ? 'Tư duy' : 'Chủ đề'} · {course.difficulty_level}</div>
             <div className="cd-title">{course.title}</div>
             <div className="cd-desc">{course.description || 'Khoá học này sẽ cung cấp kiến thức nền tảng và kỹ năng thiết yếu.'}</div>
             <div className="cd-stats">
-              <div className="cds"><div className="cds-val">{course.lesson_count}</div><div className="cds-lbl">Bài học</div></div>
-              <div className="cds"><div className="cds-val">{Math.floor(course.estimated_minutes/60)}h {course.estimated_minutes%60}m</div><div className="cds-lbl">Thời lượng</div></div>
+              <div className="cds"><div className="cds-val">{course.total_lessons}</div><div className="cds-lbl">Bài học</div></div>
+              <div className="cds"><div className="cds-val">{Math.floor(course.total_duration_minutes/60)}h {course.total_duration_minutes%60}m</div><div className="cds-lbl">Thời lượng</div></div>
               <div className="cds"><div className="cds-val">★ {course.avg_rating}</div><div className="cds-lbl">Đánh giá</div></div>
               <div className="cds"><div className="cds-val">{course.rating_count}</div><div className="cds-lbl">Học viên</div></div>
             </div>
           </div>
-          <button className="cd-cta" onClick={() => navigate('/player')}>▶ Tiếp tục học</button>
+          <button className="cd-cta" onClick={() => navigate(`/player/${course.slug}/${modules[0]?.lessons[0]?.id}`)}>▶ Tiếp tục học</button>
 
           {modules.map((mod) => (
-            <React.Fragment key={mod.module_order}>
-              <div className="mod-hd" style={{marginTop: mod.module_order > 1 ? '6px' : '0'}}>
+            <React.Fragment key={mod.order_index}>
+              <div className="mod-hd" style={{marginTop: mod.order_index > 1 ? '6px' : '0'}}>
                 <h3>{mod.module_title}</h3>
                 {mod.completion_pct === 100 && <span className="mod-done">✓ Hoàn thành</span>}
               </div>
               {mod.lessons.map((lesson) => (
                 <div 
                   key={lesson.id} 
-                  className={`lesson-row ${lesson.status === 'locked' ? 'locked-row' : 'clickable'}`}
+                  className={`lesson-row ${lesson.is_locked ? 'locked-row' : 'clickable'}`}
                   style={lesson.status === 'in_progress' ? {border:'1.5px solid rgba(255,107,53,.3)',background:'#FFFAF8'} : {}}
-                  onClick={() => lesson.status !== 'locked' && navigate('/player')}
+                  onClick={() => !lesson.is_locked && navigate(`/player/${course.slug}/${lesson.id}`)}
                 >
-                  <div className={`ln ${lesson.status === 'completed' ? 'ln-done' : lesson.status === 'in_progress' ? 'ln-active' : lesson.status === 'locked' ? 'ln-locked' : ''}`}>
-                    {lesson.status === 'completed' ? '✓' : lesson.status === 'locked' ? '🔒' : lesson.lesson_order}
+                  <div className={`ln ${lesson.status === 'completed' ? 'ln-done' : lesson.status === 'in_progress' ? 'ln-active' : lesson.is_locked ? 'ln-locked' : ''}`}>
+                    {lesson.status === 'completed' ? '✓' : lesson.is_locked ? '🔒' : lesson.order_index}
                   </div>
                   <div className="lr-info">
                     <div className="lr-title">{lesson.title}</div>
                     <div className="lr-meta">
-                      <span className={`lr-type tag-${lesson.lesson_type === 'quiz' ? 'purple' : lesson.lesson_type === 'project' ? 'gold' : 'teal'}`}>
-                        {lesson.lesson_type === 'video' ? 'Video' : lesson.lesson_type === 'quiz' ? 'Quiz' : lesson.lesson_type === 'project' ? 'Bài tập' : 'Bài đọc'}
+                      <span className={`lr-type tag-${lesson.lesson_type === 'quiz' ? 'purple' : lesson.lesson_type === 'exercise' ? 'gold' : 'teal'}`}>
+                        {lesson.lesson_type === 'video' ? 'Video' : lesson.lesson_type === 'quiz' ? 'Quiz' : lesson.lesson_type === 'exercise' ? 'Bài tập' : 'Bài đọc'}
                       </span>
-                      {lesson.estimated_minutes} phút
+                      {lesson.duration_minutes} phút
                       {lesson.status === 'in_progress' && <span style={{marginLeft: '4px'}}>· <b style={{color:'var(--primary-d)'}}>Đang học</b></span>}
-                      {lesson.status === 'locked' && <span style={{marginLeft: '4px'}}>· Hoàn thành bài trước để mở</span>}
+                      {lesson.is_locked && <span style={{marginLeft: '4px'}}>· Hoàn thành bài trước để mở</span>}
                     </div>
                   </div>
-                  <div className="lr-xp">+{lesson.xp_reward} XP</div>
+                  <div className="lr-xp">+{lesson.xp_on_complete} XP</div>
                 </div>
               ))}
             </React.Fragment>
@@ -79,7 +78,7 @@ export const CoursePage: React.FC = () => {
               </svg>
             </div>
             <div className="cdp-pil"><div className="cdp-pil-icon" style={{background:'var(--teal-l)'}}>⏱️</div><div className="cdp-pil-t">Đã học</div><div className="cdp-pil-v">{enrollment ? '1h 20m' : '0m'}</div></div>
-            <div className="cdp-pil"><div className="cdp-pil-icon" style={{background:'var(--primary-l)'}}>📝</div><div className="cdp-pil-t">Bài hoàn thành</div><div className="cdp-pil-v">{enrollment?.lessons_completed || 0} / {course.lesson_count}</div></div>
+            <div className="cdp-pil"><div className="cdp-pil-icon" style={{background:'var(--primary-l)'}}>📝</div><div className="cdp-pil-t">Bài hoàn thành</div><div className="cdp-pil-v">{enrollment?.lessons_completed || 0} / {course.total_lessons}</div></div>
             <div className="cdp-pil"><div className="cdp-pil-icon" style={{background:'var(--gold-l)'}}>⭐</div><div className="cdp-pil-t">Điểm tích lũy</div><div className="cdp-pil-v">{enrollment?.xp_earned || 0} XP</div></div>
             <div className="cdp-pil"><div className="cdp-pil-icon" style={{background:'var(--teal-l)'}}>📥</div><div className="cdp-pil-t">Học offline</div><div className="cdp-pil-v" style={{color: course.is_offline_available ? 'var(--teal)' : 'var(--ink-light)',fontSize:'11.5px'}}>{course.is_offline_available ? '✓ Có sẵn' : 'Không có sẵn'}</div></div>
             <div className="skills-h">Kỹ năng đạt được</div>
