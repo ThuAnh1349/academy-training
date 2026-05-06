@@ -149,37 +149,39 @@ export const AdminPage: React.FC = () => {
       if (activeCourseId && courses) {
         const course = courses.find((c: any) => c.id === activeCourseId);
         if (course) {
-          const elTitle = document.getElementById('ed-title') as HTMLInputElement;
-          if (elTitle) {
-            elTitle.value = course.title || '';
-            (document.getElementById('ed-slug') as HTMLInputElement).value = course.slug || '';
-            (document.getElementById('ed-desc') as HTMLTextAreaElement).value = course.description || '';
-            (document.getElementById('ed-level') as HTMLSelectElement).value = course.difficulty_level || 'co_ban';
-            (document.getElementById('ed-xp') as HTMLInputElement).value = course.xp_on_complete || '150';
-            const catSelect = document.getElementById('editor-cat-select') as HTMLSelectElement;
-            if (catSelect) {
-               // handle finding category key, course.category might be the name or key, but usually the select expects key
-               // We will just set it directly
-               catSelect.value = course.category || '';
-               if (!catSelect.value) catSelect.selectedIndex = 0;
+          setTimeout(() => {
+            const elTitle = document.getElementById('ed-title') as HTMLInputElement;
+            if (elTitle) {
+              elTitle.value = course.title || '';
+              (document.getElementById('ed-slug') as HTMLInputElement).value = course.slug || '';
+              (document.getElementById('ed-desc') as HTMLTextAreaElement).value = course.description || '';
+              (document.getElementById('ed-level') as HTMLSelectElement).value = course.difficulty_level || 'co_ban';
+              (document.getElementById('ed-xp') as HTMLInputElement).value = course.xp_on_complete || '150';
+              const catSelect = document.getElementById('editor-cat-select') as HTMLSelectElement;
+              if (catSelect) {
+                 catSelect.value = course.category || '';
+                 if (!catSelect.value) catSelect.selectedIndex = 0;
+              }
+              const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
+              if (keyEl) keyEl.value = course.id;
             }
-            const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
-            if (keyEl) keyEl.value = course.id;
-          }
+          }, 100);
         }
       } else {
-        const elTitle = document.getElementById('ed-title') as HTMLInputElement;
-        if (elTitle) {
-          elTitle.value = '';
-          (document.getElementById('ed-slug') as HTMLInputElement).value = '';
-          (document.getElementById('ed-desc') as HTMLTextAreaElement).value = '';
-          (document.getElementById('ed-level') as HTMLSelectElement).value = 'co_ban';
-          (document.getElementById('ed-xp') as HTMLInputElement).value = '150';
-          const catSelect = document.getElementById('editor-cat-select') as HTMLSelectElement;
-          if (catSelect) catSelect.selectedIndex = 0;
-          const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
-          if (keyEl) keyEl.value = '';
-        }
+        setTimeout(() => {
+          const elTitle = document.getElementById('ed-title') as HTMLInputElement;
+          if (elTitle) {
+            elTitle.value = '';
+            (document.getElementById('ed-slug') as HTMLInputElement).value = '';
+            (document.getElementById('ed-desc') as HTMLTextAreaElement).value = '';
+            (document.getElementById('ed-level') as HTMLSelectElement).value = 'co_ban';
+            (document.getElementById('ed-xp') as HTMLInputElement).value = '150';
+            const catSelect = document.getElementById('editor-cat-select') as HTMLSelectElement;
+            if (catSelect) catSelect.selectedIndex = 0;
+            const keyEl = document.getElementById('ed-course-key') as HTMLInputElement;
+            if (keyEl) keyEl.value = '';
+          }
+        }, 100);
       }
     }
   }, [activeTab, activeCourseId, courses]);
